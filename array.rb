@@ -30,12 +30,13 @@ def arrayqsort(a)
   return left + [pivot] + right
 end
 
-def arraymaxorder(a)
-  max = arraymax(a)
-  for i in 0..(a.length - 1) do
-    if a[i] == max then
-      return i + 1
+def arraymax(a)
+  max = a[0]
+  for i in 0..(a.length - 2) do
+    if a[i] < a[i+1] then
+      max = a[i+1]
     end
   end
+  return max
 end
   
