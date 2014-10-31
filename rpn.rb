@@ -1,5 +1,6 @@
 $vals=[]
 $show=[]
+$temp=[]
 
 def e(x)
   $vals.push(x)
@@ -7,7 +8,13 @@ def e(x)
   return $vals
 end
 
+def bup
+  $temp[0]=$vals.last
+  $temp[1]=$vals[$vals.length - 2]
+end
+
 def add
+  bup
   x = $vals.pop
   $vals.push($vals.pop + x)
   $show.push("add")
@@ -15,6 +22,7 @@ def add
 end
 
 def mul
+  bup
   x = $vals.pop
   $vals.push($vals.pop * x)
   $show.push("mul")
@@ -22,6 +30,7 @@ def mul
 end
 
 def sub
+  bup
   x = $vals.pop
   $vals.push($vals.pop - x)
   $show.push("sub")
@@ -29,6 +38,7 @@ def sub
 end
 
 def div
+  bup
   x = $vals.pop.to_f
   $vals.push($vals.pop / x)
   $show.push("div")
@@ -36,6 +46,7 @@ def div
 end
 
 def mod
+  bup
   x = $vals.pop
   $vals.push($vals.pop % x)
   $show.push("mod")
@@ -50,6 +61,7 @@ def inv
 end
 
 def exc
+  bup
   x = $vals.pop
   y = $vals.pop
   $vals.push(x)
@@ -68,3 +80,8 @@ def shw
   return $show
 end
 
+def undo
+  $vals[$vals.length - 1] = $temp[1]
+  $vals.push($temp[0])
+  return $vals
+end
