@@ -54,6 +54,7 @@ def mod
 end
 
 def inv
+  bup
   x = $vals.pop
   $vals.push(x * -1)
   $show.push("inv")
@@ -81,7 +82,12 @@ def shw
 end
 
 def undo
-  $vals[$vals.length - 1] = $temp[1]
-  $vals.push($temp[0])
+  if $show.last != "inv" && $show.last != "exc" then
+    $vals[$vals.length - 1] = $temp[1]
+    $vals.push($temp[0])
+  else
+    $vals[$vals.length - 1] = $temp[0]
+  end
+  $show.push("undo")
   return $vals
 end
