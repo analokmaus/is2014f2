@@ -1,3 +1,4 @@
+### primenumber judge ##
 def primejudge(n)
   for i in 2..(Math.sqrt(n)) do
     if n % i == 0 then 
@@ -7,6 +8,7 @@ def primejudge(n)
   return 1
 end
 
+### show prime numbers under n ###
 def primeun(n)
   for i in 3..n do
     if primejudge(i) == 1 then
@@ -15,6 +17,7 @@ def primeun(n)
   end
 end
 
+### eratosthenes's sieve ### 
 def eprimeun(n)
   list = [*2..n]
   plist = []

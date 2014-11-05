@@ -1,3 +1,4 @@
+### array bubble sort ###
 def arraybsort(a)
   for i in 0..(a.length - 1) do
     for j in 0..(a.length - (i + 2)) do
@@ -10,7 +11,8 @@ def arraybsort(a)
   end
   return a
 end
-    
+
+### array quick sort ###
 def arrayqsort(a)
   if a.length <= 1 then
     return a
@@ -30,6 +32,7 @@ def arrayqsort(a)
   return left + [pivot] + right
 end
 
+### max in array ###
 def arraymax(a)
   max = a[0]
   for i in 0..(a.length - 2) do

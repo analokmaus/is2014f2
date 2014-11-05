@@ -1,3 +1,4 @@
+### fizzbuzz ###
 def fizzbuzz
   for i in 0..99 do
     if i % 3 != 0 && i % 5 != 0 then
