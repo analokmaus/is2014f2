@@ -2,15 +2,15 @@ $vals=[]
 $show=[]
 $temp=[]
 
+def bup
+  $temp = $vals.clone
+end
+
 def e(x)
+  bup
   $vals.push(x)
   $show.push(x.to_s)
   return $vals
-end
-
-def bup
-  $temp[0]=$vals.last
-  $temp[1]=$vals[$vals.length - 2]
 end
 
 def add
@@ -72,22 +72,18 @@ def exc
 end
 
 def clr
+  bup
   $vals = []
   $show = []
   return $vals
 end
 
-def shw
+def show
   return $show
 end
 
 def undo
-  if $show.last != "inv" && $show.last != "exc" then
-    $vals[$vals.length - 1] = $temp[1]
-    $vals.push($temp[0])
-  else
-    $vals[$vals.length - 1] = $temp[0]
-  end
+  $vals = $temp.clone
   $show.push("undo")
   return $vals
 end

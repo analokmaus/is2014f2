@@ -1,3 +1,4 @@
+### dec to bin ###
 $init = 0
 $ans = ''
 def dectobin(n)
@@ -15,36 +16,30 @@ def dectobin(n)
   return $ans
 end
 
-$vowel=["a","i","u","e","o"]
 
+### romaji anagrams ###
+$vowel=["a","i","u","e","o"]
 def anagrams(name)
   genanagrams(name.split(""), [])
+  p("TIPS : make sure the number of vowels should be that of consonants and more")
+  p("TIPS : please use 's' and 't' instead of 'sh' and 'ch'")
+  p("TIPS : if your name includes small letters, i'm afraid you have problem in generating anagrams")
 end
 
 def genanagrams(name, temp)
-  if name.length == temp.length then
-    p(temp)
-    return 
+  if name.length == temp.length && $vowel.include?(temp.last) == true then
+    p(temp.join(""))
+    return
   end
   name.each_index do |i|
     if name[i] == nil then
       next
-    end
-    
-    if $vowel.include?(name[i]) == false && $vowel.include?(temp.last) == false && temp.last != nil then
+    elsif $vowel.include?(name[i]) == false && $vowel.include?(temp.last) == false && temp.last != nil then
       next
     end
-
-    #if $vowel.include?(name[i]) == false && temp.length == name.length - 1 then
-    #  next
-    #end
-
-    x = name[i]
-    name[i] = nil
-    temp.push(x)
+    x = name[i]; name[i] = nil; temp.push(x)
     genanagrams(name, temp)
-    name[i] = x
-    temp.pop
+    name[i] = x; temp.pop
   end
 end
   
