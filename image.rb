@@ -12,6 +12,9 @@ def pixset(x, y, r, g, b)
     if $img[y][x].r > 255 then $img[y][x].r = 255 end
     if $img[y][x].g > 255 then $img[y][x].g = 255 end
     if $img[y][x].b > 255 then $img[y][x].b = 255 end
+    if $img[y][x].r < 0 then $img[y][x].r = 0 end
+    if $img[y][x].g < 0 then $img[y][x].g = 0 end
+    if $img[y][x].b < 0 then $img[y][x].b = 0 end
   end
 end
 
@@ -44,7 +47,26 @@ def OVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
     end
   end
 end
-    
+
+def OVAdrawpointRAND(cx, cy, rad, sps, r, g, b, rdm)#color rand
+for y in 0...(2 * rad) do
+  for x in 0...(2 * rad) do
+    #do judge at each subpixel
+    dc = rand(rdm)
+    c = 0
+    for iy in 0...sps do
+      for ix in 0...sps do
+        dx = x - rad + (ix / sps)
+        dy = y - rad + (iy / sps)
+        if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then c += 1 end
+      end
+      end
+      pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps) - dc, g * c / (sps * sps) - dc, b * c / (sps * sps) - dc)
+    end
+    end
+  end
+
+
 ### Bresenham's Anti-Aliasing for Line ###
 def drawline(sx, sy, gx , gy, th, sps, r, g, b)
   #steep be true when dy > dx
@@ -102,24 +124,48 @@ def drawtriangle(ax, ay, bx, by, cx, cy, r, g, b)
 end
 
 ### Star Map ###
-def sbgradio(cx, cy, rad, str)#space back ground radiaion, rad should be float
+def sbgradio(cx, cy, rad, r, g, b)#space back ground radiaion, rad should be float
   for y in 0...(2 * rad) do
     for x in 0...(2 * rad) do
       dx = x - rad
       dy = y - rad
       c = (rad * rad - dx * dx - dy * dy ) / (rad * rad)
-      if c > 0 then pixset(cx - rad + x, cy - rad + y, str * c / 5, 0, str * c) end
+      if c > 0 then pixset(cx - rad + x, cy - rad + y, r * c, g * c, b * c) end
+    end
+  end
+end
+  
+def moon(cx, cy, rad)
+  OVAdrawpointRAND(cx, cy, rad, 5.0, 234, 244, 255, 10)
+  for i in 1..200 do
+    crx = rand(2 * rad); cry = rand(2 * rad); c = rand(20)
+    dx = crx - rad; dy = cry - rad
+    if dx * dx + dy * dy < rad * rad / 1.5 then
+      OVAdrawpointRAND(cx + dx, cy + dy, rand(rad / 3), 5.0, -c, -c, -c, 5)
     end
   end
 end
 
-def starmapping(max, n, blur, str)
+def starmap(w, h, size, n, blur, str)
   for i in 1..n do
-    sx = rand($w); sy = rand($h)
-    sbgradio(sx, sy, rand(max) * blur, str)
-    OVAdrawpoint(sx, sy, rand(max), 4.0, 255 - rand(50), 255 - rand(50), 255 - rand(20))
+    sx = rand(w); sy = rand(h)
+    if str > 0 then sbgradio(sx, sy, size * blur, str / 5, 0, str) end
+    if str >= 20 then sbgradio(sx, sy, size * blur / 15.0, str * 2, str * 2, str * 2) end
+    OVAdrawpoint(sx, sy, size, 4.0, 255 - rand(100), 255 - rand(100), 255 - rand(100))
   end
-  blurfilter(0, 0, $w, $h)
 end
-  
+
+def autostarmap
+  p("auto star mapping in progress")
+  starmap($w, $h, 2, 300, 10.0, 3)
+  starmap($w, $h, 2, 300, 20.0, 6)
+  starmap($w, $h, 3, 200, 25.0, 9)
+  starmap($w / 2, $h / 2, 3, 20, 40.0, 20)
+  starmap($w / 3, $h / 4, 4, 10, 30.0, 20)
+  starmap($w / 5, $h / 5, 2, 30, 10.0, 40)
+  blurfilter(0, 0, $w, $h)
+  p("finished auto star mapping, 940 stars has mapped")
+end
+
+
   
