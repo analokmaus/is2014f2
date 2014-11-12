@@ -1,5 +1,7 @@
 ### Core ###
 Pixel = Struct.new(:r, :g, :b)
+$LAYERLIST = ["$img"] #not available
+
 def scrinit(w, h)
   $w = w; $h = h
   $img = Array.new(h) do Array.new(w) do Pixel.new(0, 0, 0) end end
@@ -17,7 +19,7 @@ def pixset(x, y, r, g, b)
     if $img[y][x].b < 0 then $img[y][x].b = 0 end
   end
 end
-
+  
 def imgwrite(name)
   open(name,"wb") do |f|
     f.puts("P6\n#{$w} #{$h}\n255")
@@ -29,6 +31,25 @@ def imgoutput
   imgwrite('test.ppm')
 end
 
+### Layer operation ###
+def addlayer(source)
+  $newlayer = Marshal.load(Marshal.dump(source))
+  #$LAYERLIST << name
+end
+
+def layeroverwrite(base, source)
+  for x in 0...$w do
+    for y in 0...$h do
+      base[y][x].r += source[y][x].r; base[y][x].g += source[y][x].g; base[y][x].b += source[y][x].b;
+      if base[y][x].r > 255 then base[y][x].r = 255 end
+      if base[y][x].g > 255 then base[y][x].g = 255 end
+      if base[y][x].b > 255 then base[y][x].b = 255 end
+      if base[y][x].r < 0 then base[y][x].r = 0 end
+      if base[y][x].g < 0 then base[y][x].g = 0 end
+      if base[y][x].b < 0 then base[y][x].b = 0 end
+    end
+    end
+  end
 
 ### Over Sampling Anti-Aliasing for Circle ###
 def OVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
