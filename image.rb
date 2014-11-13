@@ -156,13 +156,15 @@ def sbgradio(cx, cy, rad, r, g, b)#space back ground radiaion, rad should be flo
   end
 end
   
-def moon(cx, cy, rad)
-  OVAdrawpointRAND(cx, cy, rad, 5.0, 234, 244, 255, 10)
+def drawmoon(cx, cy, rad)
+  OVAdrawpoint(cx, cy, rad, 5.0, -255, -255, -255)
+  sbgradio(cx, cy, rad * 1.3, 100, 100, 100)
+  OVAdrawpointRAND(cx, cy, rad, 5.0, 234, 244, 255, 40)
   for i in 1..200 do
-    crx = rand(2 * rad); cry = rand(2 * rad); c = rand(20)
+    crx = rand(2 * rad); cry = rand(2 * rad); c = rand(25)
     dx = crx - rad; dy = cry - rad
     if dx * dx + dy * dy < rad * rad / 1.5 then
-      OVAdrawpointRAND(cx + dx, cy + dy, rand(rad / 3), 5.0, -c, -c, -c, 5)
+      OVAdrawpointRAND(cx + dx, cy + dy, rand(rad / 2.5), 5.0, -c, -c, -c, 5)
     end
   end
 end
@@ -187,6 +189,20 @@ def autostarmap
   blurfilter(0, 0, $w, $h)
   p("finished auto star mapping, 940 stars has mapped")
 end
-
-
   
+### ANIMATION ###
+def eclipse
+  #prepare space background layer
+  scrinit($w, $h)
+  autostarmap
+  bglayer = Marshal.load(Marshal.dump($img))
+  #prepare moon layer
+  scrinit($w, $h)
+  drawmoon
+  moonlayer = Marshal.load(Marshal.dump($img))
+  for i in 0..150 do
+    scrinit($w, $h)
+    layeroverwrite($img,bglayer)
+    layeroverwrite($img,moonlayer)
+  end
+end
