@@ -82,7 +82,7 @@ for y in 0...(2 * rad) do
         if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then c += 1 end
       end
       end
-      pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps) - dc, g * c / (sps * sps) - dc, b * c / (sps * sps) - dc)
+      if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps) - dc, g * c / (sps * sps) - dc, b * c / (sps * sps) - dc) end
     end
     end
   end
@@ -157,13 +157,13 @@ def sbgradio(cx, cy, rad, r, g, b)#space back ground radiaion, rad should be flo
 end
   
 def drawmoon(cx, cy, rad)
-  OVAdrawpoint(cx, cy, rad, 5.0, -255, -255, -255)
   sbgradio(cx, cy, rad * 1.3, 100, 100, 100)
+  OVAdrawpoint(cx, cy, rad, 5.0, -255, -255, -255)
   OVAdrawpointRAND(cx, cy, rad, 5.0, 234, 244, 255, 40)
   for i in 1..200 do
-    crx = rand(2 * rad); cry = rand(2 * rad); c = rand(25)
+    crx = rand(2 * rad); cry = rand(2 * rad); c = rand(20)
     dx = crx - rad; dy = cry - rad
-    if dx * dx + dy * dy < rad * rad / 1.5 then
+    if dx * dx + dy * dy < rad * rad / 2.5 then
       OVAdrawpointRAND(cx + dx, cy + dy, rand(rad / 2.5), 5.0, -c, -c, -c, 5)
     end
   end
