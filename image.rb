@@ -11,12 +11,12 @@ end
 def pixset(x, y, r, g, b)
   if 0 <= x && x < $w && 0 <= y && y < $h then
     $img[y][x].r += r; $img[y][x].g += g; $img[y][x].b += b
-    if $img[y][x].r > 255 then $img[y][x].r = 255 end
-    if $img[y][x].g > 255 then $img[y][x].g = 255 end
-    if $img[y][x].b > 255 then $img[y][x].b = 255 end
-    if $img[y][x].r < 0 then $img[y][x].r = 0 end
-    if $img[y][x].g < 0 then $img[y][x].g = 0 end
-    if $img[y][x].b < 0 then $img[y][x].b = 0 end
+    if $img[y][x].r >= 255 then $img[y][x].r = 255 end
+    if $img[y][x].g >= 255 then $img[y][x].g = 255 end
+    if $img[y][x].b >= 255 then $img[y][x].b = 255 end
+    if $img[y][x].r <= 0 then $img[y][x].r = 0 end
+    if $img[y][x].g <= 0 then $img[y][x].g = 0 end
+    if $img[y][x].b <= 0 then $img[y][x].b = 0 end
   end
 end
   
@@ -188,6 +188,24 @@ def autostarmap
   starmap($w / 5, $h / 5, 2, 30, 10.0, 40)
   blurfilter(0, 0, $w, $h)
   p("finished auto star mapping, 940 stars has mapped")
+end
+  
+def supernova(cx, cy, rad, snrad, r, g, b, n)
+  for i in 1..n * 2 do
+    crx = rand(2 * rad); cry = rand(2 * rad)
+    dx = crx - rad; dy = cry - rad
+    if dx * dx + dy * dy * 4 < rad * rad / 3 then
+      sbgradio(cx + dx, cy + dy, snrad, r / 10, g, b)
+    end
+  end
+  for i in 1..n * 15 do
+    crx = rand(2 * rad); cry = rand(2 * rad)
+    dx = crx -rad; dy = cry - rad
+    if dx * dx + dy * dy * 4 < rad * rad / 2 then
+      sbgradio(cx + dx, cy + dy, snrad / 6.0, r, g / 10, b / 10)
+    end
+  end
+  imgoutput
 end
   
 ### ANIMATION ###
