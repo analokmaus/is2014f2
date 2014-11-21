@@ -228,10 +228,11 @@ def blackhole
   scrinit($w, $h)
   autostarmap
   for i in 1..90 do
+    wn = 100 + i
     rad = i * i / 16.0
     sbgradio($w / 2, $h / 2, rad * 1.2, i * 2.5, i * 2.5, i * 2.5)
     OVAdrawpoint($w / 2, $h / 2, rad, 5.0, -255, -255, -255)
-    imgwrite("blackhole#{i}.ppm")
+    imgwrite("blackhole#{wn}.ppm")
     p("frame #{i} was exported")
   end
 end
