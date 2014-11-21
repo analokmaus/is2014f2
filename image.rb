@@ -129,6 +129,20 @@ def blurfilter(sx, sy, gx, gy)
     end
   end
 end
+  
+def circularblur(cx, cy, r, w)
+  imgclone = Marshal.load(Marshal.dump($img))
+  for y in cy - r - w..cy + r + w do
+    for x in cx - r - w..cx + r + w do
+      dx = cx - x; dy = cy - y
+      if dx * dx + dy * dy > r * r && dx * dx + dy * dy < (r + w) * (r + w) then
+        $img[y][x].r = (imgclone[y-1][x].r + imgclone[y+1][x].r + imgclone[y][x-1].r + imgclone[y][x+1].r) / 4
+        $img[y][x].g = (imgclone[y-1][x].g + imgclone[y+1][x].g + imgclone[y][x-1].g + imgclone[y][x+1].g) / 4
+        $img[y][x].b = (imgclone[y-1][x].b + imgclone[y+1][x].b + imgclone[y][x-1].b + imgclone[y][x+1].b) / 4
+      end
+    end
+  end
+end
 
 ### Basic Figures ###
 def drawbox(sx, sy, gx, gy, r, g, b)
@@ -201,26 +215,23 @@ def supernova(cx, cy, rad, snrad, r, g, b, n)
   for i in 1..n * 15 do
     crx = rand(2 * rad); cry = rand(2 * rad)
     dx = crx -rad; dy = cry - rad
-    if dx * dx + dy * dy * 4 < rad * rad / 2 then
-      sbgradio(cx + dx, cy + dy, snrad / 6.0, r, g / 10, b / 10)
+    if dx * dx + dy * dy * 4 < rad * rad / 2 && dx * dx + dy * dy * 4 > rad * rad / 4 then
+      sbgradio(cx + dx, cy + dy, snrad / 3.0, r, g / 10, b / 10)
     end
   end
   imgoutput
 end
   
 ### ANIMATION ###
-def eclipse
+def blackhole
   #prepare space background layer
   scrinit($w, $h)
   autostarmap
-  bglayer = Marshal.load(Marshal.dump($img))
-  #prepare moon layer
-  scrinit($w, $h)
-  drawmoon
-  moonlayer = Marshal.load(Marshal.dump($img))
-  for i in 0..150 do
-    scrinit($w, $h)
-    layeroverwrite($img,bglayer)
-    layeroverwrite($img,moonlayer)
+  for i in 1..100 do
+    rad = i * i / 16
+    sbgradio($w / 2, $h / 2, rad * 1.2, i * 2.5, i * 2.5, i * 2.5)
+    OVAdrawpoint($w / 2, $h / 2, rad, 5.0, -255, -255, -255)
+    imgwrite("blackhole#{i}.ppm")
+    p("frame #{i} was exported")
   end
 end
