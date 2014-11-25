@@ -19,11 +19,31 @@ def pixset(x, y, r, g, b)
     if $img[y][x].b <= 0 then $img[y][x].b = 0 end
   end
 end
+
+def cpixset(x, y, r, g, b)
+  if 0 <= x && x < $w && 0 <= y && y < $h then
+    $imgclone[y][x].r += r; $imgclone[y][x].g += g; $imgclone[y][x].b += b
+    if $imgclone[y][x].r >= 255 then $imgclone[y][x].r = 255 end
+    if $imgclone[y][x].g >= 255 then $imgclone[y][x].g = 255 end
+    if $imgclone[y][x].b >= 255 then $imgclone[y][x].b = 255 end
+    if $imgclone[y][x].r <= 0 then $imgclone[y][x].r = 0 end
+    if $imgclone[y][x].g <= 0 then $imgclone[y][x].g = 0 end
+    if $imgclone[y][x].b <= 0 then $imgclone[y][x].b = 0 end
+  end
+end
+
   
 def imgwrite(name)
   open(name,"wb") do |f|
     f.puts("P6\n#{$w} #{$h}\n255")
     $img.each do |a| a.each do |p| f.write(p.to_a.pack('ccc')) end end
+  end
+end
+
+def cimgwrite(name)
+  open(name,"wb") do |f|
+    f.puts("P6\n#{$w} #{$h}\n255")
+    $imgclone.each do |a| a.each do |p| f.write(p.to_a.pack('ccc')) end end
   end
 end
 
@@ -69,6 +89,24 @@ def OVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
   end
 end
 
+def cOVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
+  for y in 0...(2 * rad) do
+    for x in 0...(2 * rad) do
+      #do judge at each subpixel
+      c = 0
+      for iy in 0...sps do
+        for ix in 0...sps do
+          dx = x - rad + (ix / sps)
+          dy = y - rad + (iy / sps)
+          if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then c += 1 end
+        end
+      end
+      cpixset(cx - rad + x, cy - rad + y, r * c / (sps * sps), g * c / (sps * sps), b * c / (sps * sps))
+    end
+  end
+end
+
+      
 def OVAdrawpointRAND(cx, cy, rad, sps, r, g, b, rdm)#color rand
 for y in 0...(2 * rad) do
   for x in 0...(2 * rad) do
@@ -130,15 +168,25 @@ def blurfilter(sx, sy, gx, gy)
   end
 end
   
-def circularblur(cx, cy, r, w)
-  imgclone = Marshal.load(Marshal.dump($img))
-  for y in cy - r - w..cy + r + w do
-    for x in cx - r - w..cx + r + w do
+def circularmblur(cx, cy, rad, w, size) # motion blur
+  for y in cy - rad - w..cy + rad + w do
+    for x in cx - rad - w..cx + rad + w do
       dx = cx - x; dy = cy - y
-      if dx * dx + dy * dy > r * r && dx * dx + dy * dy < (r + w) * (r + w) then
-        $img[y][x].r = (imgclone[y-1][x].r + imgclone[y+1][x].r + imgclone[y][x-1].r + imgclone[y][x+1].r) / 4
-        $img[y][x].g = (imgclone[y-1][x].g + imgclone[y+1][x].g + imgclone[y][x-1].g + imgclone[y][x+1].g) / 4
-        $img[y][x].b = (imgclone[y-1][x].b + imgclone[y+1][x].b + imgclone[y][x-1].b + imgclone[y][x+1].b) / 4
+      if dx * dx + dy * dy > rad * rad && dx * dx + dy * dy < (rad + w) * (rad + w) then
+        count = 1.0
+        r = 0
+        g = 0
+        b = 0
+        for pos in -size..size do
+          if y + pos < cy - rad - w || cy + rad + w <= y + pos || x + pos < cx - rad - w || cx + rad + w <= x + pos || $img[y][x].nil? then next end
+          count += 1
+          r += $img[y+pos][x+pos].r
+          g += $img[y+pos][x+pos].g
+          b += $img[y+pos][x+pos].b
+        end
+        $img[y+pos][x+pos].r = r / count
+        $img[y+pos][x+pos].g = g / count
+        $img[y+pos][x+pos].b = b / count
       end
     end
   end
@@ -169,6 +217,17 @@ def sbgradio(cx, cy, rad, r, g, b)#space back ground radiaion, rad should be flo
     end
   end
 end
+
+def csbgradio(cx, cy, rad, r, g, b)#space back ground radiaion, rad should be float
+  for y in 0...(2 * rad) do
+    for x in 0...(2 * rad) do
+      dx = x - rad
+      dy = y - rad
+      c = (rad * rad - dx * dx - dy * dy ) / (rad * rad)
+      if c > 0 then cpixset(cx - rad + x, cy - rad + y, r * c, g * c, b * c) end
+    end
+  end
+end
   
 def drawmoon(cx, cy, rad)
   sbgradio(cx, cy, rad * 1.3, 100, 100, 100)
@@ -189,11 +248,12 @@ def starmap(w, h, size, n, blur, str)
     if str > 0 then sbgradio(sx, sy, size * blur, str / 5, 0, str) end
     if str >= 20 then sbgradio(sx, sy, size * blur / 15.0, str * 2, str * 2, str * 2) end
     OVAdrawpoint(sx, sy, size, 4.0, 255 - rand(100), 255 - rand(100), 255 - rand(100))
+    p("star number #{i} was mapped")
   end
 end
 
 def autostarmap
-  p("auto star mapping in progress")
+  p("generating stars...")
   starmap($w, $h, 2, 300, 10.0, 3)
   starmap($w, $h, 2, 300, 20.0, 6)
   starmap($w, $h, 3, 200, 25.0, 9)
@@ -201,7 +261,7 @@ def autostarmap
   starmap($w / 3, $h / 4, 4, 10, 30.0, 20)
   starmap($w / 5, $h / 5, 2, 30, 10.0, 40)
   blurfilter(0, 0, $w, $h)
-  p("finished auto star mapping, 940 stars has mapped")
+  p("stars were succesfully mapped")
 end
   
 def supernova(cx, cy, rad, snrad, r, g, b, n)
@@ -227,12 +287,15 @@ def blackhole
   #prepare space background layer
   scrinit($w, $h)
   autostarmap
+  p("rendering... this process can take long time")
   for i in 1..90 do
     wn = 100 + i
     rad = i * i / 16.0
-    sbgradio($w / 2, $h / 2, rad * 1.2, i * 2.5, i * 2.5, i * 2.5)
-    OVAdrawpoint($w / 2, $h / 2, rad, 5.0, -255, -255, -255)
-    imgwrite("blackhole#{wn}.ppm")
+    circularmblur($w / 2, $h / 2, rad.to_i, (rad * 0.4).to_i, 4)
+    $imgclone = Marshal.load(Marshal.dump($img))
+    csbgradio($w / 2, $h / 2, rad * 1.2, i * 2.5, i * 2.5, i * 2.5)
+    cOVAdrawpoint($w / 2, $h / 2, rad, 5.0, -255, -255, -255)
+    cimgwrite("blackhole#{wn}.ppm")
     p("frame #{i} was exported")
   end
 end
