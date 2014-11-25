@@ -5,6 +5,7 @@ $LAYERLIST = ["$img"] #not available
 def scrinit(w, h)
   $w = w; $h = h
   $img = Array.new(h) do Array.new(w) do Pixel.new(0, 0, 0) end end
+  $imgclone = Array.new(h) do Array.new(w) do Pixel.new(0, 0, 0) end end
   printf("initialized screen %d x %d\n", $w, $h)  
 end
 
@@ -89,7 +90,7 @@ def OVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
   end
 end
 
-def cOVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
+def cOVAdrawpoint(cx, cy, rad, sps, r, g, b)
   for y in 0...(2 * rad) do
     for x in 0...(2 * rad) do
       #do judge at each subpixel
@@ -178,15 +179,15 @@ def circularmblur(cx, cy, rad, w, size) # motion blur
         g = 0
         b = 0
         for pos in -size..size do
-          if y + pos < cy - rad - w || cy + rad + w <= y + pos || x + pos < cx - rad - w || cx + rad + w <= x + pos || $img[y][x].nil? then next end
+          if y + pos < cy - rad - w || cy + rad + w <= y + pos || x + pos < cx - rad - w || cx + rad + w <= x + pos || y + pos >= $h - 2 || x + pos >= $w - 2 || y - pos <= 2 || x - pos <= 2 then next end
           count += 1
           r += $img[y+pos][x+pos].r
           g += $img[y+pos][x+pos].g
           b += $img[y+pos][x+pos].b
         end
-        $img[y+pos][x+pos].r = r / count
-        $img[y+pos][x+pos].g = g / count
-        $img[y+pos][x+pos].b = b / count
+        $img[y+pos-size][x+pos-size].r = r / count
+        $img[y+pos-size][x+pos-size].g = g / count
+        $img[y+pos-size][x+pos-size].b = b / count
       end
     end
   end
@@ -254,7 +255,7 @@ end
 
 def autostarmap
   p("generating stars...")
-  starmap($w, $h, 2, 300, 10.0, 3)
+  #starmap($w, $h, 2, 300, 10.0, 3)
   starmap($w, $h, 2, 300, 20.0, 6)
   starmap($w, $h, 3, 200, 25.0, 9)
   starmap($w / 2, $h / 2, 3, 20, 40.0, 20)
@@ -285,15 +286,17 @@ end
 ### ANIMATION ###
 def blackhole
   #prepare space background layer
-  scrinit($w, $h)
+  scrinit(640, 480)
   autostarmap
+  $background = Marshal.load(Marshal.dump($img))
   p("rendering... this process can take long time")
-  for i in 1..90 do
+  for i in 1..80 do
     wn = 100 + i
     rad = i * i / 16.0
-    circularmblur($w / 2, $h / 2, rad.to_i, (rad * 0.4).to_i, 4)
-    $imgclone = Marshal.load(Marshal.dump($img))
-    csbgradio($w / 2, $h / 2, rad * 1.2, i * 2.5, i * 2.5, i * 2.5)
+    $img = Marshal.load(Marshal.dump($background)) #update img layer
+    circularmblur($w / 2, $h / 2, rad.to_i, (rad * 0.6).to_i, 4)
+    $imgclone = Marshal.load(Marshal.dump($img)) #overwrite output layer
+    csbgradio($w / 2, $h / 2, rad * 1.1, i * 10, i * 10, i * 10)
     cOVAdrawpoint($w / 2, $h / 2, rad, 5.0, -255, -255, -255)
     cimgwrite("blackhole#{wn}.ppm")
     p("frame #{i} was exported")
