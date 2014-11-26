@@ -9,47 +9,45 @@ def scrinit(w, h)
   printf("initialized screen %d x %d\n", $w, $h)  
 end
 
-def pixset(x, y, r, g, b)
+def pixset(x, y, r, g, b, layer)
   if 0 <= x && x < $w && 0 <= y && y < $h then
-    $img[y][x].r += r; $img[y][x].g += g; $img[y][x].b += b
-    if $img[y][x].r >= 255 then $img[y][x].r = 255 end
-    if $img[y][x].g >= 255 then $img[y][x].g = 255 end
-    if $img[y][x].b >= 255 then $img[y][x].b = 255 end
-    if $img[y][x].r <= 0 then $img[y][x].r = 0 end
-    if $img[y][x].g <= 0 then $img[y][x].g = 0 end
-    if $img[y][x].b <= 0 then $img[y][x].b = 0 end
+    if layer == "img" then
+      $img[y][x].r += r; $img[y][x].g += g; $img[y][x].b += b
+      if $img[y][x].r >= 255 then $img[y][x].r = 255 end
+      if $img[y][x].g >= 255 then $img[y][x].g = 255 end
+      if $img[y][x].b >= 255 then $img[y][x].b = 255 end
+      if $img[y][x].r <= 0 then $img[y][x].r = 0 end
+      if $img[y][x].g <= 0 then $img[y][x].g = 0 end
+      if $img[y][x].b <= 0 then $img[y][x].b = 0 end
+    elsif layer == "clone" then
+      $imgclone[y][x].r += r; $imgclone[y][x].g += g; $imgclone[y][x].b += b
+      if $imgclone[y][x].r >= 255 then $imgclone[y][x].r = 255 end
+      if $imgclone[y][x].g >= 255 then $imgclone[y][x].g = 255 end
+      if $imgclone[y][x].b >= 255 then $imgclone[y][x].b = 255 end
+      if $imgclone[y][x].r <= 0 then $imgclone[y][x].r = 0 end
+      if $imgclone[y][x].g <= 0 then $imgclone[y][x].g = 0 end
+      if $imgclone[y][x].b <= 0 then $imgclone[y][x].b = 0 end
+    else
+      p("LAYER #{layer} not found")
+    end
   end
 end
-
-def cpixset(x, y, r, g, b)
-  if 0 <= x && x < $w && 0 <= y && y < $h then
-    $imgclone[y][x].r += r; $imgclone[y][x].g += g; $imgclone[y][x].b += b
-    if $imgclone[y][x].r >= 255 then $imgclone[y][x].r = 255 end
-    if $imgclone[y][x].g >= 255 then $imgclone[y][x].g = 255 end
-    if $imgclone[y][x].b >= 255 then $imgclone[y][x].b = 255 end
-    if $imgclone[y][x].r <= 0 then $imgclone[y][x].r = 0 end
-    if $imgclone[y][x].g <= 0 then $imgclone[y][x].g = 0 end
-    if $imgclone[y][x].b <= 0 then $imgclone[y][x].b = 0 end
-  end
-end
-
   
-def imgwrite(name)
+def imgwrite(name, layer)
   open(name,"wb") do |f|
     f.puts("P6\n#{$w} #{$h}\n255")
-    $img.each do |a| a.each do |p| f.write(p.to_a.pack('ccc')) end end
-  end
-end
-
-def cimgwrite(name)
-  open(name,"wb") do |f|
-    f.puts("P6\n#{$w} #{$h}\n255")
-    $imgclone.each do |a| a.each do |p| f.write(p.to_a.pack('ccc')) end end
+    if layer == "img" then
+      $img.each do |a| a.each do |p| f.write(p.to_a.pack('ccc')) end end
+    elsif layer == "clone" then
+      $imgclone.each do |a| a.each do |p| f.write(p.to_a.pack('ccc')) end end
+    else
+      p("LAYER #{layer} not found")
+    end
   end
 end
 
 def imgoutput
-  imgwrite('test.ppm')
+  imgwrite('test.ppm', "img")
 end
 
 ### Layer operation ###
@@ -69,11 +67,11 @@ def layeroverwrite(base, source)
       if base[y][x].g < 0 then base[y][x].g = 0 end
       if base[y][x].b < 0 then base[y][x].b = 0 end
     end
-    end
   end
+end
 
 ### Over Sampling Anti-Aliasing for Circle ###
-def OVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
+def OVAdrawpoint(cx, cy, rad, sps, r, g, b, layer)#sps:subpixel size (must be float)
   for y in 0...(2 * rad) do
     for x in 0...(2 * rad) do
       #do judge at each subpixel
@@ -85,47 +83,36 @@ def OVAdrawpoint(cx, cy, rad, sps, r, g, b)#sps:subpixel size (must be float)
           if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then c += 1 end
         end
       end
-      pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps), g * c / (sps * sps), b * c / (sps * sps))
-    end
-  end
-end
-
-def cOVAdrawpoint(cx, cy, rad, sps, r, g, b)
-  for y in 0...(2 * rad) do
-    for x in 0...(2 * rad) do
-      #do judge at each subpixel
-      c = 0
-      for iy in 0...sps do
-        for ix in 0...sps do
-          dx = x - rad + (ix / sps)
-          dy = y - rad + (iy / sps)
-          if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then c += 1 end
-        end
+      if layer == "img" then
+        pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps), g * c / (sps * sps), b * c / (sps * sps), "img")
+      elsif layer == "clone" then
+        pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps), g * c / (sps * sps), b * c / (sps * sps), "clone")
+      else
+        p("LAYER #{layer} not found")
       end
-      cpixset(cx - rad + x, cy - rad + y, r * c / (sps * sps), g * c / (sps * sps), b * c / (sps * sps))
     end
   end
 end
-
       
 def OVAdrawpointRAND(cx, cy, rad, sps, r, g, b, rdm)#color rand
-for y in 0...(2 * rad) do
-  for x in 0...(2 * rad) do
-    #do judge at each subpixel
-    dc = rand(rdm)
-    c = 0
-    for iy in 0...sps do
-      for ix in 0...sps do
-        dx = x - rad + (ix / sps)
-        dy = y - rad + (iy / sps)
-        if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then c += 1 end
+  for y in 0...(2 * rad) do
+    for x in 0...(2 * rad) do
+      #do judge at each subpixel
+      dc = rand(rdm)
+      c = 0
+      for iy in 0...sps do
+        for ix in 0...sps do
+          dx = x - rad + (ix / sps)
+          dy = y - rad + (iy / sps)
+          if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then c += 1 end
+        end
+        if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then
+          pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps) - dc, g * c / (sps * sps) - dc, b * c / (sps * sps) - dc)
+        end
       end
-      end
-      if (dx * dx) + (dy * dy) < (rad - 1) * (rad - 1) then pixset(cx - rad + x, cy - rad + y, r * c / (sps * sps) - dc, g * c / (sps * sps) - dc, b * c / (sps * sps) - dc) end
-    end
     end
   end
-
+end
 
 ### Bresenham's Anti-Aliasing for Line ###
 def drawline(sx, sy, gx , gy, th, sps, r, g, b)
@@ -172,14 +159,13 @@ end
 def circularmblur(cx, cy, rad, w, size) # motion blur
   for y in cy - rad - w..cy + rad + w do
     for x in cx - rad - w..cx + rad + w do
+      if x + size >= $w - 1 || x - size <= 0 || y + size >= $h || y - size <= 0 then next end
       dx = cx - x; dy = cy - y
       if dx * dx + dy * dy > rad * rad && dx * dx + dy * dy < (rad + w) * (rad + w) then
         count = 1.0
-        r = 0
-        g = 0
-        b = 0
+        r = 0; g = 0; b = 0
         for pos in -size..size do
-          if y + pos < cy - rad - w || cy + rad + w <= y + pos || x + pos < cx - rad - w || cx + rad + w <= x + pos || y + pos >= $h - 2 || x + pos >= $w - 2 || y - pos <= 2 || x - pos <= 2 then next end
+          if y + pos < cy - rad - w || cy + rad + w <= y + pos || x + pos < cx - rad - w || cx + rad + w <= x + pos then next end
           count += 1
           r += $img[y+pos][x+pos].r
           g += $img[y+pos][x+pos].g
@@ -208,24 +194,21 @@ def drawtriangle(ax, ay, bx, by, cx, cy, r, g, b)
 end
 
 ### Star Map ###
-def sbgradio(cx, cy, rad, r, g, b)#space back ground radiaion, rad should be float
+def sbgradio(cx, cy, rad, r, g, b, layer)#space back ground radiaion, rad should be float
   for y in 0...(2 * rad) do
     for x in 0...(2 * rad) do
       dx = x - rad
       dy = y - rad
       c = (rad * rad - dx * dx - dy * dy ) / (rad * rad)
-      if c > 0 then pixset(cx - rad + x, cy - rad + y, r * c, g * c, b * c) end
-    end
-  end
-end
-
-def csbgradio(cx, cy, rad, r, g, b)#space back ground radiaion, rad should be float
-  for y in 0...(2 * rad) do
-    for x in 0...(2 * rad) do
-      dx = x - rad
-      dy = y - rad
-      c = (rad * rad - dx * dx - dy * dy ) / (rad * rad)
-      if c > 0 then cpixset(cx - rad + x, cy - rad + y, r * c, g * c, b * c) end
+      if c > 0 then
+        if layer == "img" then
+          pixset(cx - rad + x, cy - rad + y, r * c, g * c, b * c, "img")
+        elsif layer == "clone" then
+          pixset(cx - rad + x, cy - rad + y, r * c, g * c, b * c, "clone")
+        else
+          p("LAYER #{layer} not found")
+        end
+      end
     end
   end
 end
@@ -245,10 +228,10 @@ end
 
 def starmap(w, h, size, n, blur, str)
   for i in 1..n do
-    sx = rand(w); sy = rand(h)
-    if str > 0 then sbgradio(sx, sy, size * blur, str / 5, 0, str) end
-    if str >= 20 then sbgradio(sx, sy, size * blur / 15.0, str * 2, str * 2, str * 2) end
-    OVAdrawpoint(sx, sy, size, 4.0, 255 - rand(100), 255 - rand(100), 255 - rand(100))
+    sx = 5 + rand(w - 10); sy = 5 + rand(h - 10)
+    if str > 0 then sbgradio(sx, sy, size * blur, str / 5, 0, str, "img") end
+    if str >= 20 then sbgradio(sx, sy, size * blur / 15.0, str * 2, str * 2, str * 2, "img") end
+    OVAdrawpoint(sx, sy, size, 4.0, 255 - rand(100), 255 - rand(100), 255 - rand(100), "img")
     p("star number #{i} was mapped")
   end
 end
@@ -282,23 +265,23 @@ def supernova(cx, cy, rad, snrad, r, g, b, n)
   end
   imgoutput
 end
-  
+    
 ### ANIMATION ###
 def blackhole
   #prepare space background layer
   scrinit(640, 480)
   autostarmap
   $background = Marshal.load(Marshal.dump($img))
-  p("rendering... this process can take long time")
+  p("rendering frames... this process can take long time")
   for i in 1..80 do
     wn = 100 + i
     rad = i * i / 16.0
     $img = Marshal.load(Marshal.dump($background)) #update img layer
-    circularmblur($w / 2, $h / 2, rad.to_i, (rad * 0.6).to_i, 4)
+    circularmblur($w / 2, $h / 2, rad.to_i, (rad * 0.6).to_i, 6)
     $imgclone = Marshal.load(Marshal.dump($img)) #overwrite output layer
-    csbgradio($w / 2, $h / 2, rad * 1.1, i * 10, i * 10, i * 10)
-    cOVAdrawpoint($w / 2, $h / 2, rad, 5.0, -255, -255, -255)
-    cimgwrite("blackhole#{wn}.ppm")
+    sbgradio($w / 2, $h / 2, rad * 1.1, i * 10, i * 10, i * 10, "clone")
+    OVAdrawpoint($w / 2, $h / 2, rad, 5.0, -255, -255, -255, "clone")
+    imgwrite("blackhole#{wn}.ppm", "clone")
     p("frame #{i} was exported")
   end
 end
