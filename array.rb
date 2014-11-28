@@ -53,7 +53,6 @@ def arraymsort(a, i, j)
     end
     return a
 end
-      
     
 ### max in array ###
 def arraymax(a)
@@ -65,11 +64,8 @@ def arraymax(a)
   end
   return max
 end
-  
-### benchmark ###
-def bench(count, &block)
-  t1 = Process.times.utime
-  count.times do yield end
-  t2 = Process.times.utime
-  return t2 - t1
+
+### Gauss-Jordan Elimination ###
+def subvec(a, b, m)
+    a.each_index do |i| a[i] = a[i] - m * b[i] end
 end
