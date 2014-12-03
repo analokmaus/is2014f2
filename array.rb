@@ -3,6 +3,13 @@ def randarray(n, max)
   return Array.new(n) do rand(max) end
 end
 
+def qsortworstarray(n)
+  hlf = n / 2
+  a = Array.new(hlf) do |i| i end
+  b = Array.new(n - hlf) do |i| n - i - 1 end
+  return a + b
+end
+
 ### array bubble sort ###
 def arraybsort(a)
   for i in 0...a.length do
@@ -38,22 +45,54 @@ end
 ### array merge sort ###
 def arraymsort(a, i, j)
     if j <= i
-      return
+      #
     else
       k = (i + j) / 2
       arraymsort(a, i, k); arraymsort(a, k + 1, j)
-      left = a[i..k]; right = a[k+1..j]
-      while i <= k || k + 1 <= j do
-        if i > k || k + 1 <= j && a[i] > a[k + 1] then
-          b.push(a[j]); j += 1
-        else
-          b.push(a[i]); i += 1
-        end
-      end
+      b = merge(a, i, k, a, k + 1, j)
+      b.length.times do |l| a[i + 1] = b[l] end
     end
     return a
 end
-    
+  
+def merge(a1, i1, j1, a2, i2, j2)
+  b = []
+  while i1 <= j1 || i2 <= j2 do
+    if i1 > j1 || i2 <= j2 && a1[i1] > a2[i2] then
+      b << a2[i2]; i2 += 1
+    else
+      b << a1[i1]; i1 += 1
+    end
+  end
+  return b
+end
+
+###　quick-merge sort ###
+$stacklevel = 0
+def arrayqmsort(a)
+  stacklevellimit = Math.sqrt(a.length)
+  if a.length <= 1 then
+    return a
+  end
+  pivot = a[0]
+  right = []
+  left = []
+  for i in 1..(a.length - 1) do
+    if a[i] <= pivot then
+      left << a[i]
+      else
+      right << a[i]
+    end
+  end
+  if $stacklevel >= stacklevellimit then
+    arraymsort(left, 0, left.length - 1); arraymsort(right, 0, right.length - 1)
+    $stacklevel = 0; return left + [pivot] + right
+  end
+  left = arrayqmsort(left); $stacklevel += 1
+  right = arrayqmsort(right); $stacklevel += 1
+  $stacklevel = 0; return left + [pivot] + right
+end
+  
 ### max in array ###
 def arraymax(a)
   max = a[0]
