@@ -40,16 +40,7 @@ class Concat
 end
 
 class Human
-  def initialize
-    @name = ""
-    @day_born = []
-    @place_born = ""
-    @day_died = []
-    @place_rest = ""
-    @occupation = []
-    @nationality
-  end
-  def input(name, day_born, place_born, day_died, place_rest, occupation, nationality)
+  def initialize(name, day_born, place_born, day_died, place_rest, occupation, nationality)
     @name = name
     @day_born = day_born
     @place_born = place_born
