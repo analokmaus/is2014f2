@@ -105,6 +105,42 @@ def arraymax(a)
 end
 
 ### Gauss-Jordan Elimination ###
-def subvec(a, b, m)
-    a.each_index do |i| a[i] = a[i] - m * b[i] end
+class Matritza
+  def initialize(a)
+    @matryoshka = a
+  end
+  def show
+    for i in 0...@matryoshka.length do
+      p(@matryoshka[i])
+    end
+  end
+  def sub_row(a, b, m)
+    @matryoshka[a].each_index do |i| @matryoshka[a][i] -=  m * @matryoshka[b][i] end
+  end
+  def elim
+    for i in 0...@matryoshka.length do
+      pvt = pivot(i, @matryoshka.length)
+      if @matryoshka[pvt][i].abs < 0.0001 then return nil end # muri
+      swap(i, pvt)
+      for j in 0...@matryoshka.length do
+        if i != j then sub_row(j, i, @matryoshka[j][i] / @matryoshka[i][i].to_f) end
+      end
+    end
+    for i in 0...@matryoshka.length do
+      @matryoshka[i][@matryoshka.length] /= @matryoshka[i][i]
+    end
+    self.show
+  end
+  def pivot(i, n) # find a raw with largest value
+    max = @matryoshka[i][i]; pvt = i
+    for j in i+1...n do
+      if @matryoshka[j][i].abs > max then max = @matryoshka[j][i]; pvt = j end
+    end
+    return pvt
+  end
+  def swap(i, j)
+    tmp = @matryoshka[i]
+    @matryoshka[i] = @matryoshka[j]
+    @matryoshka[j] = tmp
+  end
 end
