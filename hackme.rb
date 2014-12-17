@@ -35,8 +35,8 @@ def bfa(a)
   end
 end
 
-$prime = [ 3, 7, 11, 13]
-class Encryption
+$prime = [ 31, 37, 41, 47, 53, 59, 61]
+class Encryption #1~999
   def initialize(data)
     @plain_txt = data
     $prime.shuffle!
@@ -60,21 +60,11 @@ class Encryption
     return
   end
   def encode
-    mod_p = @plain_txt % (@keyset[0] * @keyset[1])
-    for i in 1..@keyset[2] do
-      p(mod_p)
-      @code = mod_p ** 2 % (@keyset[0] * @keyset[1])
-      mod_p = @code % (@keyset[0] * @keyset[1])
-    end
+    @code = @plain_txt ** @keyset[2] % (@keyset[0] * @keyset[1])
     return @code
   end
   def decode(n)
-    mod_p = @code % (@keyset[0] * @keyset[1])
-    for i in 1..n do
-      p(mod_p)
-      @answer = mod_p ** 2 % (@keyset[0] * @keyset[1])
-      mod_p = @answer % (@keyset[0] * @keyset[1])
-    end
+    @answer = @code ** n % (@keyset[0] * @keyset[1])
     return @answer
   end
 end
