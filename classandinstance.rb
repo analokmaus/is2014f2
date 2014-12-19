@@ -112,3 +112,39 @@ class Buffer
     @cur.data = tmp
   end
 end
+
+class Stack1
+  def initialize
+    @arr = []
+    #@arr = Array.new(100)
+    #@ptr = -1
+  end
+  def isempty
+    return @arr.empty?
+    #return @ptr < 0
+  end
+  def push(x)
+    #@ptr += 1
+    #@arr[@ptr] = x
+    @arr << x
+    return x
+  end
+  def pop
+    x = @arr.last
+    @arr.pop
+    #x = @arr[@ptr]
+    #@ptr -= 1
+    return x
+  end
+end
+
+class Stack2
+  Cell = Struct.new(:data, :next)
+  def initialize
+    @top = nil
+  end
+  def push(x)
+  end
+  def pop
+  end
+end
